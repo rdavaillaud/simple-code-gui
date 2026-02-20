@@ -5,13 +5,25 @@ on:
     tags:
       - 'v*'
   workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version tag (e.g., v1.1.2)'
-        required: true
 
 jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.ver.outputs.version }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+      - name: Compute version
+        id: ver
+        run: |
+          BASE=$(node -p "require('./package.json').version")
+          echo "version=$BASE.$(date +%s)" >> $GITHUB_OUTPUT
+
   build-linux:
+    needs: [setup]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -39,6 +51,7 @@ jobs:
         run: npm run package
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          APP_VERSION: ${{ needs.setup.outputs.version }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v6
@@ -51,6 +64,7 @@ jobs:
             dist-build/*.yml
 
   build-macos:
+    needs: [setup]
     runs-on: macos-latest
     permissions:
       contents: write
@@ -80,6 +94,7 @@ jobs:
         run: npm run package
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          APP_VERSION: ${{ needs.setup.outputs.version }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v6
@@ -92,6 +107,7 @@ jobs:
             dist-build/*.blockmap
 
   build-windows:
+    needs: [setup]
     runs-on: windows-latest
     permissions:
       contents: write
@@ -121,6 +137,7 @@ jobs:
         run: npm run package
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          APP_VERSION: ${{ needs.setup.outputs.version }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v6
@@ -133,7 +150,7 @@ jobs:
             dist-build/*.blockmap
 
   release:
-    needs: [build-linux, build-macos, build-windows]
+    needs: [setup, build-linux, build-macos, build-windows]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -159,12 +176,7 @@ jobs:
 
       - name: Get version
         id: version
-        run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
-          else
-            echo "version=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-          fi
+        run: echo "version=v${{ needs.setup.outputs.version }}" >> $GITHUB_OUTPUT
 
       - name: List artifacts
         run: ls -la dist-build/

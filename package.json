@@ -16,7 +16,7 @@
     "dev": "electron-vite dev",
     "build": "electron-vite build",
     "preview": "electron-vite preview",
-    "package": "electron-builder --config.extraMetadata.version=$(node -p \"require('./package.json').version\").$(date +%s)",
+    "package": "node -e \"const {execSync}=require('child_process');const v=process.env.APP_VERSION||(require('./package.json').version+'.'+Math.floor(Date.now()/1000));execSync('electron-builder --config.extraMetadata.version='+v,{stdio:'inherit'})\"",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
