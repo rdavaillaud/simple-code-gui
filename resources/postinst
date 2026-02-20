@@ -1,0 +1,3 @@
+#!/bin/bash
+chown root:root /opt/simple-code-gui/chrome-sandbox
+chmod 4755 /opt/simple-code-gui/chrome-sandbox

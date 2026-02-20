@@ -22,8 +22,9 @@ linux:
   icon: resources/icon.png
   executableName: simple-code-gui
   desktop:
-    Name: Simple Code GUI
-    StartupWMClass: simple-code-gui
+    entry:
+      Name: Simple Code GUI
+      StartupWMClass: simple-code-gui
   synopsis: Multi-backend AI coding assistant GUI
   description: Desktop app for managing multiple AI coding assistant sessions across projects
 
