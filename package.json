@@ -16,7 +16,7 @@
     "dev": "electron-vite dev",
     "build": "electron-vite build",
     "preview": "electron-vite preview",
-    "package": "electron-builder",
+    "package": "electron-builder --config.extraMetadata.version=$(node -p \"require('./package.json').version\").$(date +%s)",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
